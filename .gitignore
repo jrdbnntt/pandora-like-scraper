@@ -135,3 +135,6 @@ ENV/
 
 
 .idea/
+cookies.txt
+likes.json
+likes.html

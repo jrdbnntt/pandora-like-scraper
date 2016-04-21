@@ -2,7 +2,13 @@ Pandora Like Scraper
 ====================
 
 Scrapes all info about a pandora user's likes and exports them into a nice web page format. Due to the way pandora
-provides the likes, the order returned will be from most to least recently liked songs.
+provides the likes, the order returned will be from most to least recently liked songs. Since it uses your existing
+pandora cookies, it is safe to say using this method to copy a ton of music files is probably a bad idea. I've included
+the links just as a way to test the track.
+
+Requires two files:
+* `template.html` - in repo, html template
+* `cookies.txt` - copy your cookies from a xhr request pandora does to itself while you are logged in into this file in standard header format (`name=val; name=val;`...)
 
 Creates two files:
 * A `likes.html` web page that has all the likes in a nice display format

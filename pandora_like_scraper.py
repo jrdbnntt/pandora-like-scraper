@@ -2,14 +2,17 @@
 
 from __future__ import print_function
 import sys
+import json
 
+OUT_HTML = 'likes.html'
+OUT_JSON = 'likes.json'
+IN_TEMPLATE = 'template.html'
 
 GET_LIKES = 'www.pandora.com/content/tracklikes?webname={}&thumbStartIndex={}'
-OUT_HTML = 'likes.html'
 LIKES_PER_INDEX = 5     # number of likes pandora gives you each get
 
 
-def scrape_user(username, html=True, json=True, max_recent=sys.maxint):
+def scrape_user(username, save_html=True, save_json=True, max_recent=sys.maxint):
     """ Scrapes pandora likes from user """
     print('Scraping pandora likes from {}...'.format(username))
 
@@ -37,10 +40,10 @@ def scrape_user(username, html=True, json=True, max_recent=sys.maxint):
                 if likes[i].song == likes[j].song:
                     likes.pop(j)
 
-    if html:
-        save_json(likes)
-    if json:
-        save_html(likes)
+    if save_html:
+        save_json_file(likes)
+    if save_json:
+        save_html_file(username, likes)
 
     return likes
 
@@ -54,12 +57,37 @@ def scrape_like(html):
     pass
 
 
-def save_json(likes):
-    pass
+def save_json_file(likes):
+    data = dict()
+    data['likes'] = likes
+
+    fo = open(OUT_JSON, 'w')
+    fo.write(json.dumps(data, indent=4))
+    fo.close()
 
 
-def save_html(likes):
-    pass
+def save_html_file(username, likes):
+    # Load template
+    template = open(IN_TEMPLATE, 'r')
+    html = '\n'.join(template.readlines())
+    template.close()
+
+    # Create rows
+    rows = list()
+    for like in likes:
+        row = '<tr>'
+        row += '<td>' + like['artist'] + '</td>'
+        row += '<td>' + like['album'] + '</td>'
+        row += '<td>' + like['albumArt'] + '</td>'
+        row += '<td>' + like['song'] + '</td>'
+        row += '</tr>'
+        rows.append(row)
+
+    # Save as html
+    fo = open(OUT_HTML, 'w')
+    fo.write(html.format(username=username, rows=' '.join(rows)))
+    fo.close()
+
 
 if __name__ == '__main__':
     argc = len(sys.argv)

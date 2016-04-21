@@ -24,5 +24,11 @@ JSON format
 
 Can be used via command line, where the command line args are passed into the following function, in order:
 ```python
-def scrape_user(username, html=True, json=True, max_recent=sys.maxint)
+def scrape_user(username, save_html=True, save_json=True, max_recent=sys.maxint)
 ```
+
+When saving the html file and calling the function where `template.html` is not in the working directory, set the module
+constant `IN_TEMPLATE` to it's relative path, or to your own template page.
+
+I made this for myself because I use my likes from pandora to choose what albums to get later. Feel free to use it for
+whatever.

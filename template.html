@@ -2,20 +2,53 @@
 <html>
 <head>
     <title>{username}'s Pandora Likes</title>
+
+
+    <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link type="text/css" rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/dataTables.bootstrap.min.css">
+
+    <style type="text/css">
+        .album-art img {
+            height: 50px;
+            width: auto;
+        }
+    </style>
+
 </head>
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>Artist</th>
-                <th>Album</th>
-                <th>Song</th>
-                <th>Thumb Num</th>
-            </tr>
-        </thead>
-        <tbody>
-            {rows}
-        </tbody>
-    </table>
+    <div class="container-fluid">
+        <h1>{username}'s Pandora Likes</h1>
+
+        <table class="table table-bordered table-striped">
+            <thead><tr>{headers}</tr></thead>
+            <tbody>{rows}</tbody>
+            <tfoot><tr>{headers}</tr></tfoot>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+            integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.11/js/dataTables.bootstrap.min.js"></script>
+
+    <script>
+        (function() {
+            'use strict';
+
+            var tbl = $('table');
+
+            tbl.DataTable({
+                order: [[0, 'desc']],
+                aLengthMenu: [
+                    [5, 10, 15, 20, -1],
+                    [5, 10, 15, 20, 'All']
+                ],
+                iDisplayLength: 25
+            });
+        })();
+    </script>
 </body>
 </html>

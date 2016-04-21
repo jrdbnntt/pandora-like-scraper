@@ -8,7 +8,7 @@ OUT_HTML = 'likes.html'
 OUT_JSON = 'likes.json'
 IN_TEMPLATE = 'template.html'
 
-GET_LIKES = 'www.pandora.com/content/tracklikes?webname={}&thumbStartIndex={}'
+GET_LIKES = 'http://www.pandora.com/content/tracklikes?webname={}&thumbStartIndex={}'
 LIKES_PER_INDEX = 5     # number of likes pandora gives you each get
 
 
@@ -72,20 +72,27 @@ def save_html_file(username, likes):
     html = '\n'.join(template.readlines())
     template.close()
 
+    # Create headers
+    headers = list()
+    headers.append('<th>Album Art</th>')
+    headers.append('<th>Artist</th>')
+    headers.append('<th>Album</th>')
+    headers.append('<th>Song</th>')
+
     # Create rows
     rows = list()
     for like in likes:
         row = '<tr>'
+        row += '<td><div class="album-art"><a href="{0}"><img href="{0}"/></a></div></td>'.format(like['albumArt'])
         row += '<td>' + like['artist'] + '</td>'
         row += '<td>' + like['album'] + '</td>'
-        row += '<td>' + like['albumArt'] + '</td>'
         row += '<td>' + like['song'] + '</td>'
         row += '</tr>'
         rows.append(row)
 
     # Save as html
     fo = open(OUT_HTML, 'w')
-    fo.write(html.format(username=username, rows=' '.join(rows)))
+    fo.write(html.format(username=username, rows=' '.join(rows), headers=' '.join(headers)))
     fo.close()
 
 
@@ -94,7 +101,6 @@ if __name__ == '__main__':
     if argc < 1:
         scrape_user(str(input('Enter the pandora user to scrape likes from: ')))
     else:
-        count = l
         scrape_user(
             sys.argv[0],
             (sys.argv[1] == 'True') if argc >= 2 else True,

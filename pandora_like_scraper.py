@@ -98,8 +98,10 @@ def get_like_index(username, index, cookies):
             return '?'
 
     likes = list()
+    offset = 0
     for info_box in root.xpath("//div[contains(@class, 'infobox i-t-shade-1')]"):
         like = dict()
+        like['order'] = index + offset
         like['albumArt'] = clean(info_box.xpath(".//div[@class='infobox-thumb']/img/@src"))
         like['song'] = clean(info_box.xpath(".//div[@class='infobox-body']/h3/a/text()"))
         like['artist'] = clean(info_box.xpath(".//div[@class='infobox-body']/p[1]/a/text()"))
@@ -118,6 +120,7 @@ def get_like_index(username, index, cookies):
             like['album'] = clean(song_root.xpath("//span[contains(@class, 'album_link')]/text()"))
 
         likes.append(like)
+        offset += 1
 
     return likes
 
@@ -139,7 +142,7 @@ def save_html_file(username, likes):
     template.close()
 
     # Create headers
-    headers = ''
+    headers = '<th>Nth-Ago</th>'
     headers += '<th>Album Art</th>'
     headers += '<th>Artist</th>'
     headers += '<th>Album</th>'
@@ -150,6 +153,7 @@ def save_html_file(username, likes):
     rows = ''
     for like in likes:
         rows += '<tr>'
+        rows += '<td>' + str(like['order']) + '</td>'
         rows += '<td><div class="album-art"><a href="{0}"><img src="{0}"/></a></div></td>'.format(like['albumArt'])
         rows += '<td>' + like['artist'] + '</td>'
         rows += '<td>' + like['album'] + '</td>'

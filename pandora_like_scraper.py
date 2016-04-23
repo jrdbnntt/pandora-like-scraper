@@ -45,9 +45,9 @@ def scrape_user(username, max_recent=sys.maxint, save_html=True, save_json=True)
     print("Got {} song likes".format(len(likes)))
 
     if save_json:
-        save_json_file(username, likes)
+        save_json_file(OUT_JSON, username, likes)
     if save_html:
-        save_html_file(username, likes)
+        save_html_file(OUT_HTML, username, likes)
 
     return likes
 
@@ -125,17 +125,17 @@ def get_like_index(username, index, cookies):
     return likes
 
 
-def save_json_file(username, likes):
+def save_json_file(file_name, username, likes):
     data = dict()
     data['likes'] = likes
     data['username'] = username
 
-    fo = open(OUT_JSON, 'w')
+    fo = open(file_name, 'w')
     fo.write(json.dumps(data, indent=4))
     fo.close()
 
 
-def save_html_file(username, likes):
+def save_html_file(file_name, username, likes):
     # Load template
     template = open(IN_TEMPLATE, 'r')
     in_html = u''.join(template.readlines())
@@ -158,7 +158,7 @@ def save_html_file(username, likes):
         rows += '<td>' + like['artist'] + '</td>'
         rows += '<td>' + like['album'] + '</td>'
         rows += '<td>' + like['song'] + '</td>'
-        rows += '<td><a target="_blank" href="' + like['audioFile'] + '">Play</a></td>'
+        rows += '<td><a target="_blank" href="' + like.get('audioFile', '#') + '">Play</a></td>'
         rows += '</tr> '
 
     # Escape all brackets
@@ -170,7 +170,7 @@ def save_html_file(username, likes):
     in_html = in_html.format(username=username, rows=rows, headers=headers)
 
     # Save as html
-    fo = open(OUT_HTML, 'w')
+    fo = open(file_name, 'w')
     fo.write(in_html.encode("UTF-8"))
     fo.close()
 
@@ -179,7 +179,7 @@ def html_from_json(file_name):
     global OUT_HTML
     OUT_HTML = str(file_name).replace('.json', '') + '.html'
 
-    fi = open(file_name)
+    fi = open(file_name, 'r')
     j = json.loads(''.join(fi.readlines()))
     fi.close()
 

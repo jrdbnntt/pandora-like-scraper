@@ -7,8 +7,8 @@ import json
 import requests
 import re
 
-OUT_HTML = 'likes.html'
-OUT_JSON = 'likes.json'
+OUT_HTML = 'data/likes.html'
+OUT_JSON = 'data/likes.json'
 IN_TEMPLATE = 'template.html'
 IN_COOKIES = 'cookies.txt'
 
@@ -17,7 +17,7 @@ GET_LIKES = 'http://www.pandora.com/content/tracklikes?webname={username}&thumbS
 GET_LIKES_CNT = 5   # number of likes returned per request
 
 
-def scrape_user(username, save_html=True, save_json=True, max_recent=sys.maxint):
+def scrape_user(username, max_recent=sys.maxint, save_html=True, save_json=True):
     """ Scrapes pandora likes from user """
     print('Scraping pandora likes from {}...'.format(username))
 
@@ -41,18 +41,33 @@ def scrape_user(username, save_html=True, save_json=True, max_recent=sys.maxint)
         likes.pop(len(likes)-1)
 
     # Remove duplicates
-    for i in range(0, len(likes)):
-        if i <= len(likes)-2:
-            for j in range(i+1, len(likes)):
-                if str(likes[i]) == str(likes[j]):
-                    likes.pop(j)
+    likes = remove_duplicates(likes)
+    print("Got {} song likes".format(len(likes)))
 
-    if save_html:
-        save_json_file(likes)
     if save_json:
+        save_json_file(username, likes)
+    if save_html:
         save_html_file(username, likes)
 
     return likes
+
+
+def remove_duplicates(likes):
+    def same(a, b, name):
+        return a[name] != u'?' and a[name] == b[name]
+
+    filtered = list()
+    for like in likes:
+        seen = False
+        for f in filtered:
+            if same(like, f, 'song') and same(like, f, 'album') and same(like, f, 'artist'):
+                seen = True
+                break
+        if not seen:
+            filtered.append(like)
+
+    print("Removed {} duplicates".format(len(likes) - len(filtered)))
+    return filtered
 
 
 def load_cookies():
@@ -96,6 +111,9 @@ def get_like_index(username, index, cookies):
             song_root.xpath("//div[contains(@class, 'backstage')]/meta[@itemprop='audio']/@content"))
         like['album'] = clean(song_root.xpath("//a[contains(@class, 'album_link')]/text()"))
 
+        if like['audioFile'] == u'$track.getSampleUrl(true)':
+            like['audioFile'] = '#'
+
         if like['album'] == '?':
             like['album'] = clean(song_root.xpath("//span[contains(@class, 'album_link')]/text()"))
 
@@ -104,9 +122,10 @@ def get_like_index(username, index, cookies):
     return likes
 
 
-def save_json_file(likes):
+def save_json_file(username, likes):
     data = dict()
     data['likes'] = likes
+    data['username'] = username
 
     fo = open(OUT_JSON, 'w')
     fo.write(json.dumps(data, indent=4))
@@ -116,7 +135,7 @@ def save_json_file(likes):
 def save_html_file(username, likes):
     # Load template
     template = open(IN_TEMPLATE, 'r')
-    in_html = ''.join(template.readlines())
+    in_html = u''.join(template.readlines())
     template.close()
 
     # Create headers
@@ -148,8 +167,19 @@ def save_html_file(username, likes):
 
     # Save as html
     fo = open(OUT_HTML, 'w')
-    fo.write(in_html)
+    fo.write(in_html.encode("UTF-8"))
     fo.close()
+
+
+def html_from_json(file_name):
+    global OUT_HTML
+    OUT_HTML = str(file_name).replace('.json', '') + '.html'
+
+    fi = open(file_name)
+    j = json.loads(''.join(fi.readlines()))
+    fi.close()
+
+    save_html_file(j['username'], remove_duplicates(j['likes']))
 
 
 if __name__ == '__main__':
@@ -160,8 +190,8 @@ if __name__ == '__main__':
     else:
         scrape_user(
             sys.argv[1],
-            (str(sys.argv[2]).lower() == 'true') if argc >= 3 else True,
+            int(sys.argv[2]) if argc >= 3 and str(sys.argv[2]).isdigit() else sys.maxint,
             (str(sys.argv[3]).lower() == 'true') if argc >= 4 else True,
-            int(sys.argv[4]) if argc >= 5 and str(sys.argv[4]).isdigit() else sys.maxint
+            (str(sys.argv[4]).lower() == 'true') if argc >= 5 else True,
         )
 
